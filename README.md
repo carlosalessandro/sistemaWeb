@@ -346,23 +346,7 @@ Content-Type: application/json
 {
   "file_path": "C:\\docs\\arquivo.txt",
   "file_type": "txt"
-}
-```
-
----
-
-## 📖 Documentação
-
-### Documentos Disponíveis
-
-- **[README_LANGCHAIN.md](README_LANGCHAIN.md)** - Documentação técnica completa
-- **[GUIA_RAPIDO.md](GUIA_RAPIDO.md)** - Guia de início rápido
-- **[INSTALACAO.md](INSTALACAO.md)** - Guia de instalação detalhado
-- **[DASHBOARD_NOCODE.md](DASHBOARD_NOCODE.md)** - Documentação do dashboard
-- **[WORKFLOW_BUILDER.md](WORKFLOW_BUILDER.md)** - Guia do workflow builder
-- **[docs/N8N_COMPARISON.md](docs/N8N_COMPARISON.md)** - Comparação com N8N
-- **[MENU_LATERAL.md](MENU_LATERAL.md)** - Documentação do menu
-- **[VIEWS_IMPLEMENTADAS.md](VIEWS_IMPLEMENTADAS.md)** - Todas as views
+}`
 
 ### Tutoriais
 
