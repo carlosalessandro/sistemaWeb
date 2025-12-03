@@ -17,17 +17,18 @@
 
 ## 📋 Sobre o Projeto
 
-Sistema web completo desenvolvido com **Django** e **LangChain**, oferecendo uma plataforma escalável para automação de IA com interface visual no-code. Ideal para criar chatbots, processar documentos, construir workflows e gerenciar bases de conhecimento.
+Sistema web completo desenvolvido com **Django** e **LangChain**, oferecendo uma plataforma escalável para automação de IA com interface visual no-code. Inclui um **Workflow Builder inspirado no N8N** para criar automações complexas através de drag-and-drop. Ideal para criar chatbots, processar documentos, construir workflows e gerenciar bases de conhecimento.
 
 ### 🎯 Principais Características
 
 - 🎨 **Interface No-Code** - Use sem programar
-- 🔄 **Workflow Builder** - Construtor visual estilo N8N
+- 🔄 **Workflow Builder N8N-Style** - Construtor visual de automações
 - 💬 **Chat com IA** - GPT-3.5, GPT-4 integrados
 - 📚 **Knowledge Base (RAG)** - Busca semântica em documentos
 - 📄 **Processamento de Documentos** - TXT, PDF, DOCX, CSV
 - 🎯 **Arquitetura MVC** - Código organizado e escalável
 - 📱 **Design Responsivo** - Funciona em desktop e mobile
+- ⚡ **21 Tipos de Nós** - Triggers, IA, Dados, Lógica, Integrações
 
 ---
 
@@ -38,8 +39,9 @@ Sistema web completo desenvolvido com **Django** e **LangChain**, oferecendo uma
 #### Dashboard No-Code
 ![Dashboard](docs/images/dashboard.png)
 
-#### Workflow Builder
+#### Workflow Builder (N8N-Style)
 ![Workflow](docs/images/workflow.png)
+*Interface inspirada no N8N com drag-and-drop completo*
 
 #### Chat com IA
 ![Chat](docs/images/chat.png)
@@ -171,22 +173,36 @@ Interface visual completa:
 - Sem necessidade de código
 - Feedback visual em tempo real
 
-### 3. 🔄 Workflow Builder
+### 3. 🔄 Workflow Builder (Inspirado no N8N)
 
-Construtor visual de automações:
+Construtor visual de automações estilo N8N:
+- **Interface drag-and-drop** completa
 - **21 tipos de nós** disponíveis
-- Drag-and-drop completo
-- Conexões visuais
+- **Conexões visuais** com curvas Bezier
+- **Canvas infinito** com grid
 - Salvar/Carregar workflows
 - Exportar para JSON
+- Execução de workflows
 
-**Categorias de Nós:**
-- ▶️ Triggers (Manual, Schedule, Webhook)
-- 🤖 IA & LangChain (Chat, Embeddings, RAG, Summarize, Translate)
-- 📄 Documentos (Load, Split, Extract)
-- 💾 Dados (Input, Output, Transform, Filter)
-- 🔀 Lógica (IF, Switch, Loop)
-- 🔌 Integrações (HTTP, Email, Database)
+**Categorias de Nós (Inspiradas no N8N):**
+- ▶️ **Triggers** (Manual, Schedule, Webhook)
+- 🤖 **IA & LangChain** (Chat GPT, Embeddings, RAG, Summarize, Translate)
+- 📄 **Documentos** (Load, Split, Extract)
+- 💾 **Dados** (Input, Output, Transform, Filter)
+- 🔀 **Lógica** (IF, Switch, Loop)
+- 🔌 **Integrações** (HTTP, Email, Database)
+
+**Funcionalidades N8N-Style:**
+- ✅ Canvas infinito com grid visual
+- ✅ Drag-and-drop de nós da paleta
+- ✅ Conexões visuais com curvas Bezier
+- ✅ Painel de propriedades dinâmico
+- ✅ Salvar/Carregar workflows
+- ✅ Exportar para JSON
+- ✅ Execução de workflows
+- ✅ Validação de conexões
+
+> 💡 **Nota:** Nosso Workflow Builder foi inspirado no [N8N](https://n8n.io/), adaptado para automação de IA com LangChain. Veja a [comparação completa](docs/N8N_COMPARISON.md).
 
 ### 4. 📚 Knowledge Base (RAG)
 
@@ -344,6 +360,7 @@ Content-Type: application/json
 - **[INSTALACAO.md](INSTALACAO.md)** - Guia de instalação detalhado
 - **[DASHBOARD_NOCODE.md](DASHBOARD_NOCODE.md)** - Documentação do dashboard
 - **[WORKFLOW_BUILDER.md](WORKFLOW_BUILDER.md)** - Guia do workflow builder
+- **[docs/N8N_COMPARISON.md](docs/N8N_COMPARISON.md)** - Comparação com N8N
 - **[MENU_LATERAL.md](MENU_LATERAL.md)** - Documentação do menu
 - **[VIEWS_IMPLEMENTADAS.md](VIEWS_IMPLEMENTADAS.md)** - Todas as views
 
@@ -467,6 +484,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 🙏 Agradecimentos
 
+- [N8N](https://n8n.io/) - Inspiração para o Workflow Builder
 - [LangChain](https://python.langchain.com/) - Framework de IA
 - [OpenAI](https://openai.com/) - Modelos GPT
 - [Django](https://www.djangoproject.com/) - Framework web
