@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema LangChain</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/sidebar.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <div class="logo">🤖</div>
+            <h2>LangChain AI</h2>
+        </div>
+
+        <!-- Toggle Button -->
+        <div class="sidebar-toggle" onclick="toggleCollapse()">
+            <i class="fas fa-chevron-left" id="toggle-icon"></i>
+        </div>
+
+        <!-- Menu Items -->
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'home' %}" class="{% if request.path == '/' %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-home"></i></span>
+                    <span class="text">Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'nocode_dashboard' %}" class="{% if 'dashboard' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-th-large"></i></span>
+                    <span class="text">Dashboard</span>
+                    <span class="menu-badge">New</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'ai_chat' %}" class="{% if 'ai-chat' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-comments"></i></span>
+                    <span class="text">AI Chat</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'workflow_builder' %}" class="{% if 'workflow' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-project-diagram"></i></span>
+                    <span class="text">Workflow Builder</span>
+                    <span class="menu-badge">New</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'knowledge_base' %}" class="{% if 'knowledge-base' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-book"></i></span>
+                    <span class="text">Knowledge Base</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'documents' %}" class="{% if 'documents' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-file-alt"></i></span>
+                    <span class="text">Documentos</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'analytics' %}" class="{% if 'analytics' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-chart-line"></i></span>
+                    <span class="text">Análises</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'about' %}" class="{% if 'about' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-info-circle"></i></span>
+                    <span class="text">Sobre</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'contact' %}" class="{% if 'contact' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span>
+                    <span class="text">Contato</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings' %}" class="{% if 'settings' in request.path %}active{% endif %}">
+                    <span class="icon"><i class="fas fa-cog"></i></span>
+                    <span class="text">Configurações</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <p>&copy; {{ year }} LangChain AI</p>
+            <p>v1.0.0</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h1>{{ title }}</h1>
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                    <span>{{ user.username }}</span>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn-primary">Login</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="{% static 'app/scripts/jquery-1.10.2.js' %}"></script>
+    <script src="{% static 'app/scripts/bootstrap.js' %}"></script>
+    
+    <script>
+        // Toggle Sidebar Collapse (Desktop)
+        function toggleCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                icon.className = 'fas fa-chevron-left';
+            }
+            
+            // Save state
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        // Toggle Sidebar (Mobile)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Restore sidebar state on load
+        window.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            
+            if (collapsed) {
+                sidebar.classList.add('collapsed');
+                document.getElementById('toggle-icon').className = 'fas fa-chevron-right';
+            }
+        });
+
+        // Close sidebar on mobile when clicking a link
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

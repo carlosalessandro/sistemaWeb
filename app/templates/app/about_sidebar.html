@@ -1,0 +1,99 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+        <h3>ℹ️ Sobre o Sistema</h3>
+    </div>
+    <p style="font-size: 16px; line-height: 1.8;">
+        <strong>{{ message }}</strong>
+    </p>
+    <p style="line-height: 1.8;">
+        Sistema completo de inteligência artificial desenvolvido com arquitetura MVC escalável,
+        integrado com LangChain para funcionalidades avançadas de IA.
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>🏗️ Arquitetura</h3>
+            </div>
+            <ul style="line-height: 2;">
+                <li><strong>Model:</strong> Modelos de dados Django</li>
+                <li><strong>View:</strong> Templates e APIs REST</li>
+                <li><strong>Controller:</strong> Lógica de negócio</li>
+                <li><strong>Services:</strong> Integração LangChain</li>
+                <li><strong>Repositories:</strong> Acesso a dados</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>🎯 Funcionalidades</h3>
+            </div>
+            <ul style="line-height: 2;">
+                <li>Chat interativo com IA</li>
+                <li>Knowledge Base (RAG)</li>
+                <li>Processamento de documentos</li>
+                <li>Dashboard visual no-code</li>
+                <li>APIs REST completas</li>
+                <li>Menu lateral responsivo</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>💻 Tecnologias</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <h4 style="color: #00bcd4;">Backend</h4>
+                    <ul style="line-height: 2;">
+                        <li>Django 3.2+</li>
+                        <li>Python 3.8+</li>
+                        <li>SQLite</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h4 style="color: #00bcd4;">IA & LangChain</h4>
+                    <ul style="line-height: 2;">
+                        <li>LangChain 1.1.0</li>
+                        <li>OpenAI GPT-3.5/4</li>
+                        <li>FAISS Vector Store</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h4 style="color: #00bcd4;">Frontend</h4>
+                    <ul style="line-height: 2;">
+                        <li>HTML5 + CSS3</li>
+                        <li>JavaScript ES6+</li>
+                        <li>Bootstrap 3</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>👨‍💻 Desenvolvido com</h3>
+    </div>
+    <p style="font-size: 18px; line-height: 2;">
+        ❤️ Paixão por tecnologia e IA<br>
+        🚀 Arquitetura escalável e profissional<br>
+        📚 Documentação completa em português<br>
+        🎨 Design moderno e responsivo
+    </p>
+</div>
+
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<style>
+    .kb-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .kb-card:hover {
+        box-shadow: 0 4px 12px rgba(0,188,212,0.2);
+        transform: translateY(-2px);
+    }
+    
+    .kb-item {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        border-left: 4px solid #00bcd4;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .kb-item-info h4 {
+        margin: 0 0 5px 0;
+        color: #00bcd4;
+    }
+    
+    .kb-item-info p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .kb-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-kb {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-kb.primary {
+        background: #00bcd4;
+        color: white;
+    }
+    
+    .btn-kb.primary:hover {
+        background: #00acc1;
+    }
+    
+    .btn-kb.danger {
+        background: #ff5722;
+        color: white;
+    }
+    
+    .btn-kb.danger:hover {
+        background: #e64a19;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .stat-card .number {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-card .label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h3>📚 Knowledge Base Manager</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Gerencie suas bases de conhecimento e documentos</p>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="number" id="total-kbs">0</div>
+        <div class="label">Knowledge Bases</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" id="total-docs">0</div>
+        <div class="label">Documentos</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" id="total-queries">0</div>
+        <div class="label">Consultas</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" id="total-embeddings">0</div>
+        <div class="label">Embeddings</div>
+    </div>
+</div>
+
+<!-- Create New KB -->
+<div class="kb-card">
+    <h3 style="color: #00bcd4; margin-bottom: 20px;">➕ Criar Nova Knowledge Base</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Nome da KB:</label>
+                <input type="text" id="kb-name" class="form-control" placeholder="Ex: kb_produtos">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Descrição:</label>
+                <input type="text" id="kb-description" class="form-control" placeholder="Descrição da KB">
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Documentos (um por linha):</label>
+        <textarea id="kb-documents" class="form-control" rows="6" placeholder="Digite cada documento em uma linha..."></textarea>
+    </div>
+    <button class="btn-kb primary" onclick="createKB()">
+        <i class="fas fa-plus"></i> Criar Knowledge Base
+    </button>
+</div>
+
+<!-- Existing KBs -->
+<div class="kb-card">
+    <h3 style="color: #00bcd4; margin-bottom: 20px;">📋 Knowledge Bases Existentes</h3>
+    <div id="kb-list">
+        <p style="color: #999; text-align: center;">Nenhuma KB criada ainda</p>
+    </div>
+</div>
+
+<!-- Query KB -->
+<div class="kb-card">
+    <h3 style="color: #00bcd4; margin-bottom: 20px;">🔍 Consultar Knowledge Base</h3>
+    <div class="form-group">
+        <label>Selecione a KB:</label>
+        <select id="query-kb-select" class="form-control">
+            <option value="">Selecione uma KB...</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Sua pergunta:</label>
+        <input type="text" id="query-input" class="form-control" placeholder="O que você quer saber?">
+    </div>
+    <button class="btn-kb primary" onclick="queryKB()">
+        <i class="fas fa-search"></i> Consultar
+    </button>
+    <div id="query-result" style="margin-top: 20px; display: none;">
+        <h4 style="color: #00bcd4;">Resultado:</h4>
+        <div id="query-answer" style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-top: 10px;"></div>
+    </div>
+</div>
+
+<script>
+let knowledgeBases = JSON.parse(localStorage.getItem('knowledgeBases') || '[]');
+
+function updateStats() {
+    document.getElementById('total-kbs').textContent = knowledgeBases.length;
+    let totalDocs = knowledgeBases.reduce((sum, kb) => sum + (kb.documents?.length || 0), 0);
+    document.getElementById('total-docs').textContent = totalDocs;
+    document.getElementById('total-queries').textContent = localStorage.getItem('totalQueries') || '0';
+    document.getElementById('total-embeddings').textContent = totalDocs * 1536; // Simulated
+}
+
+function updateKBList() {
+    const listDiv = document.getElementById('kb-list');
+    const selectEl = document.getElementById('query-kb-select');
+    
+    if (knowledgeBases.length === 0) {
+        listDiv.innerHTML = '<p style="color: #999; text-align: center;">Nenhuma KB criada ainda</p>';
+        selectEl.innerHTML = '<option value="">Selecione uma KB...</option>';
+        return;
+    }
+    
+    let html = '';
+    knowledgeBases.forEach((kb, index) => {
+        html += `
+            <div class="kb-item">
+                <div class="kb-item-info">
+                    <h4>${kb.name}</h4>
+                    <p>${kb.description || 'Sem descrição'} • ${kb.documents?.length || 0} documentos</p>
+                </div>
+                <div class="kb-actions">
+                    <button class="btn-kb primary" onclick="viewKB(${index})">
+                        <i class="fas fa-eye"></i> Ver
+                    </button>
+                    <button class="btn-kb danger" onclick="deleteKB(${index})">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    listDiv.innerHTML = html;
+    
+    // Update select
+    selectEl.innerHTML = '<option value="">Selecione uma KB...</option>';
+    knowledgeBases.forEach((kb, index) => {
+        selectEl.innerHTML += `<option value="${index}">${kb.name}</option>`;
+    });
+}
+
+async function createKB() {
+    const name = document.getElementById('kb-name').value.trim();
+    const description = document.getElementById('kb-description').value.trim();
+    const docsText = document.getElementById('kb-documents').value.trim();
+    
+    if (!name || !docsText) {
+        alert('⚠️ Preencha o nome e os documentos!');
+        return;
+    }
+    
+    const documents = docsText.split('\n').filter(d => d.trim());
+    
+    try {
+        const response = await fetch('/api/create-kb', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({documents, kb_id: name})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            knowledgeBases.push({
+                name,
+                description,
+                documents,
+                created: new Date().toISOString()
+            });
+            
+            localStorage.setItem('knowledgeBases', JSON.stringify(knowledgeBases));
+            
+            document.getElementById('kb-name').value = '';
+            document.getElementById('kb-description').value = '';
+            document.getElementById('kb-documents').value = '';
+            
+            updateKBList();
+            updateStats();
+            
+            alert('✅ Knowledge Base criada com sucesso!');
+        } else {
+            alert('❌ Erro: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erro de conexão: ' + error.message);
+    }
+}
+
+async function queryKB() {
+    const kbIndex = document.getElementById('query-kb-select').value;
+    const query = document.getElementById('query-input').value.trim();
+    
+    if (!kbIndex || !query) {
+        alert('⚠️ Selecione uma KB e digite uma pergunta!');
+        return;
+    }
+    
+    const kb = knowledgeBases[kbIndex];
+    
+    try {
+        const response = await fetch('/api/query-kb', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query, kb_id: kb.name})
+        });
+        
+        const data = await response.json();
+        
+        const resultDiv = document.getElementById('query-result');
+        const answerDiv = document.getElementById('query-answer');
+        
+        if (data.success) {
+            answerDiv.innerHTML = `
+                <p><strong>Resposta:</strong></p>
+                <p>${data.answer}</p>
+                ${data.sources ? `<p><strong>Fontes:</strong> ${data.sources.length} documentos</p>` : ''}
+            `;
+            resultDiv.style.display = 'block';
+            
+            // Update query count
+            let totalQueries = parseInt(localStorage.getItem('totalQueries') || '0');
+            localStorage.setItem('totalQueries', (totalQueries + 1).toString());
+            updateStats();
+        } else {
+            answerDiv.innerHTML = `<p style="color: #ff5722;">❌ Erro: ${data.error}</p>`;
+            resultDiv.style.display = 'block';
+        }
+    } catch (error) {
+        alert('❌ Erro de conexão: ' + error.message);
+    }
+}
+
+function viewKB(index) {
+    const kb = knowledgeBases[index];
+    alert(`📚 ${kb.name}\n\n${kb.description}\n\nDocumentos: ${kb.documents.length}\nCriado: ${new Date(kb.created).toLocaleString()}`);
+}
+
+function deleteKB(index) {
+    if (confirm('Deseja excluir esta Knowledge Base?')) {
+        knowledgeBases.splice(index, 1);
+        localStorage.setItem('knowledgeBases', JSON.stringify(knowledgeBases));
+        updateKBList();
+        updateStats();
+    }
+}
+
+// Initialize
+updateKBList();
+updateStats();
+</script>
+
+{% endblock %}

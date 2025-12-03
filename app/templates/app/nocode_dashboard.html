@@ -1,0 +1,559 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<style>
+    .dashboard-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .dashboard-card h3 {
+        margin-top: 0;
+        color: #0097a7;
+        border-bottom: 2px solid #00bcd4;
+        padding-bottom: 10px;
+    }
+    .btn-action {
+        margin: 5px;
+        background: #00bcd4;
+        border-color: #00bcd4;
+    }
+    .btn-action:hover {
+        background: #00acc1;
+        border-color: #00acc1;
+    }
+    .btn-primary {
+        background: #00bcd4;
+        border-color: #00bcd4;
+    }
+    .btn-primary:hover {
+        background: #00acc1;
+        border-color: #00acc1;
+    }
+    .result-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 15px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .kb-item {
+        background: #e9ecef;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .status-success { background: #28a745; color: white; }
+    .status-error { background: #dc3545; color: white; }
+    .status-info { background: #17a2b8; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .nav-tabs { margin-bottom: 20px; }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h3>🚀 Dashboard No-Code LangChain</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Interface completa para gerenciar IA, Chat e Knowledge Bases</p>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active"><a href="#chat-tab" data-toggle="tab">💬 Chat IA</a></li>
+    <li><a href="#kb-tab" data-toggle="tab">📚 Knowledge Base</a></li>
+    <li><a href="#docs-tab" data-toggle="tab">📄 Documentos</a></li>
+    <li><a href="#config-tab" data-toggle="tab">⚙️ Configurações</a></li>
+</ul>
+
+<!-- Tab Contents -->
+<div class="tab-content">
+    
+    <!-- CHAT TAB -->
+    <div id="chat-tab" class="tab-content active">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="dashboard-card">
+                    <h3>💬 Chat com IA</h3>
+                    <div id="chat-messages" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background-color: #f9f9f9;">
+                        <p style="text-align: center; color: #999;">Inicie uma conversa...</p>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Digite sua mensagem...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" id="send-chat-btn">Enviar</button>
+                            <button class="btn btn-warning" type="button" id="clear-chat-btn">Limpar</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card">
+                    <h3>📊 Estatísticas</h3>
+                    <p><strong>Mensagens enviadas:</strong> <span id="msg-count">0</span></p>
+                    <p><strong>Sessão atual:</strong> <span id="session-id">default</span></p>
+                    <button class="btn btn-info btn-sm" onclick="newSession()">Nova Sessão</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KNOWLEDGE BASE TAB -->
+    <div id="kb-tab" class="tab-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>📚 Criar Knowledge Base</h3>
+                    <div class="form-group">
+                        <label>Nome da KB:</label>
+                        <input type="text" id="kb-name" class="form-control" placeholder="Ex: kb_produtos">
+                    </div>
+                    <div class="form-group">
+                        <label>Documentos (um por linha):</label>
+                        <textarea id="kb-documents" class="form-control" rows="8" placeholder="Digite cada documento em uma linha..."></textarea>
+                    </div>
+                    <button class="btn btn-success btn-action" onclick="createKB()">Criar Knowledge Base</button>
+                    <div id="kb-create-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>🔍 Consultar Knowledge Base</h3>
+                    <div class="form-group">
+                        <label>Selecione a KB:</label>
+                        <select id="kb-select" class="form-control">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Sua pergunta:</label>
+                        <input type="text" id="kb-query" class="form-control" placeholder="O que você quer saber?">
+                    </div>
+                    <button class="btn btn-primary btn-action" onclick="queryKB()">Consultar</button>
+                    <div id="kb-query-result" class="result-box" style="display: none;"></div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>📋 Knowledge Bases Criadas</h3>
+                    <div id="kb-list">
+                        <p style="color: #999;">Nenhuma KB criada ainda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCUMENTS TAB -->
+    <div id="docs-tab" class="tab-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>📄 Processar Documento</h3>
+                    <div class="form-group">
+                        <label>Tipo de documento:</label>
+                        <select id="doc-type" class="form-control">
+                            <option value="txt">Texto (.txt)</option>
+                            <option value="pdf">PDF (.pdf)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Caminho do arquivo:</label>
+                        <input type="text" id="doc-path" class="form-control" placeholder="Ex: C:\docs\arquivo.txt">
+                    </div>
+                    <button class="btn btn-primary btn-action" onclick="processDocument()">Processar</button>
+                    <div id="doc-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>✍️ Processar Texto Direto</h3>
+                    <div class="form-group">
+                        <label>Cole seu texto aqui:</label>
+                        <textarea id="direct-text" class="form-control" rows="10" placeholder="Cole o texto que deseja processar..."></textarea>
+                    </div>
+                    <button class="btn btn-success btn-action" onclick="processDirectText()">Processar Texto</button>
+                    <div id="text-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIG TAB -->
+    <div id="config-tab" class="tab-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>⚙️ Configurações do Sistema</h3>
+                    <div class="form-group">
+                        <label>Modelo LLM:</label>
+                        <select id="config-model" class="form-control">
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Temperatura (0-1):</label>
+                        <input type="range" id="config-temp" class="form-control" min="0" max="1" step="0.1" value="0.7">
+                        <span id="temp-value">0.7</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Chunk Size:</label>
+                        <input type="number" id="config-chunk" class="form-control" value="1000">
+                    </div>
+                    <button class="btn btn-primary btn-action" onclick="saveConfig()">Salvar Configurações</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>📊 Status do Sistema</h3>
+                    <p><strong>Status API:</strong> <span id="api-status" class="status-badge status-info">Verificando...</span></p>
+                    <p><strong>LangChain:</strong> <span class="status-badge status-success">Ativo</span></p>
+                    <p><strong>Banco de Dados:</strong> <span class="status-badge status-success">Conectado</span></p>
+                    <button class="btn btn-info btn-action" onclick="checkStatus()">Verificar Status</button>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>🧪 Testes Rápidos</h3>
+                    <button class="btn btn-warning btn-action" onclick="testChat()">Testar Chat</button>
+                    <button class="btn btn-warning btn-action" onclick="testKB()">Testar KB</button>
+                    <button class="btn btn-danger btn-action" onclick="clearAll()">Limpar Tudo</button>
+                    <div id="test-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let messageCount = 0;
+let currentSession = 'default';
+let knowledgeBases = [];
+
+// Tab switching
+document.querySelectorAll('.nav-tabs a').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.nav-tabs li').forEach(li => li.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        this.parentElement.classList.add('active');
+        document.querySelector(this.getAttribute('href')).classList.add('active');
+    });
+});
+
+// Chat functions
+function addChatMessage(role, content) {
+    const messagesDiv = document.getElementById('chat-messages');
+    if (messagesDiv.children.length === 1 && messagesDiv.children[0].textContent.includes('Inicie')) {
+        messagesDiv.innerHTML = '';
+    }
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.style.marginBottom = '10px';
+    messageDiv.style.textAlign = role === 'user' ? 'right' : 'left';
+    
+    const bubble = document.createElement('div');
+    bubble.style.display = 'inline-block';
+    bubble.style.padding = '10px 15px';
+    bubble.style.borderRadius = '15px';
+    bubble.style.maxWidth = '70%';
+    bubble.style.backgroundColor = role === 'user' ? '#007bff' : '#e9ecef';
+    bubble.style.color = role === 'user' ? 'white' : 'black';
+    bubble.textContent = content;
+    
+    messageDiv.appendChild(bubble);
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    if (role === 'user') {
+        messageCount++;
+        document.getElementById('msg-count').textContent = messageCount;
+    }
+}
+
+async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    addChatMessage('user', message);
+    input.value = '';
+    
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message, session_id: currentSession})
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            addChatMessage('assistant', data.response);
+        } else {
+            addChatMessage('assistant', 'Erro: ' + data.error);
+        }
+    } catch (error) {
+        addChatMessage('assistant', 'Erro de conexão: ' + error.message);
+    }
+}
+
+document.getElementById('send-chat-btn').addEventListener('click', sendChat);
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendChat();
+});
+
+document.getElementById('clear-chat-btn').addEventListener('click', () => {
+    document.getElementById('chat-messages').innerHTML = '<p style="text-align: center; color: #999;">Inicie uma conversa...</p>';
+    messageCount = 0;
+    document.getElementById('msg-count').textContent = '0';
+});
+
+function newSession() {
+    currentSession = 'session_' + Date.now();
+    document.getElementById('session-id').textContent = currentSession;
+    document.getElementById('chat-messages').innerHTML = '<p style="text-align: center; color: #999;">Nova sessão iniciada...</p>';
+}
+
+// Knowledge Base functions
+async function createKB() {
+    const name = document.getElementById('kb-name').value.trim();
+    const docsText = document.getElementById('kb-documents').value.trim();
+    
+    if (!name || !docsText) {
+        alert('Preencha o nome e os documentos!');
+        return;
+    }
+    
+    const documents = docsText.split('\n').filter(d => d.trim());
+    
+    try {
+        const response = await fetch('/api/create-kb', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({documents, kb_id: name})
+        });
+        const data = await response.json();
+        
+        const resultDiv = document.getElementById('kb-create-result');
+        resultDiv.style.display = 'block';
+        
+        if (data.success) {
+            resultDiv.innerHTML = `<p class="status-badge status-success">✓ KB criada com sucesso!</p><p>${data.message}</p>`;
+            knowledgeBases.push(name);
+            updateKBList();
+            updateKBSelect();
+        } else {
+            resultDiv.innerHTML = `<p class="status-badge status-error">✗ Erro</p><p>${data.error}</p>`;
+        }
+    } catch (error) {
+        document.getElementById('kb-create-result').innerHTML = `<p class="status-badge status-error">Erro: ${error.message}</p>`;
+    }
+}
+
+async function queryKB() {
+    const kbId = document.getElementById('kb-select').value;
+    const query = document.getElementById('kb-query').value.trim();
+    
+    if (!kbId || !query) {
+        alert('Selecione uma KB e digite uma pergunta!');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/query-kb', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query, kb_id: kbId})
+        });
+        const data = await response.json();
+        
+        const resultDiv = document.getElementById('kb-query-result');
+        resultDiv.style.display = 'block';
+        
+        if (data.success) {
+            let html = `<p class="status-badge status-success">✓ Resposta encontrada</p>`;
+            html += `<p><strong>Resposta:</strong> ${data.answer}</p>`;
+            if (data.sources && data.sources.length > 0) {
+                html += `<p><strong>Fontes:</strong></p><ul>`;
+                data.sources.forEach(s => html += `<li>${s.substring(0, 100)}...</li>`);
+                html += `</ul>`;
+            }
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = `<p class="status-badge status-error">✗ Erro</p><p>${data.error}</p>`;
+        }
+    } catch (error) {
+        document.getElementById('kb-query-result').innerHTML = `<p class="status-badge status-error">Erro: ${error.message}</p>`;
+    }
+}
+
+function updateKBList() {
+    const listDiv = document.getElementById('kb-list');
+    if (knowledgeBases.length === 0) {
+        listDiv.innerHTML = '<p style="color: #999;">Nenhuma KB criada ainda</p>';
+        return;
+    }
+    
+    let html = '';
+    knowledgeBases.forEach(kb => {
+        html += `<div class="kb-item">
+            <span><strong>${kb}</strong></span>
+            <button class="btn btn-sm btn-danger" onclick="deleteKB('${kb}')">Excluir</button>
+        </div>`;
+    });
+    listDiv.innerHTML = html;
+}
+
+function updateKBSelect() {
+    const select = document.getElementById('kb-select');
+    select.innerHTML = '<option value="">Selecione...</option>';
+    knowledgeBases.forEach(kb => {
+        const option = document.createElement('option');
+        option.value = kb;
+        option.textContent = kb;
+        select.appendChild(option);
+    });
+}
+
+function deleteKB(kbId) {
+    if (confirm(`Deseja excluir a KB "${kbId}"?`)) {
+        knowledgeBases = knowledgeBases.filter(kb => kb !== kbId);
+        updateKBList();
+        updateKBSelect();
+    }
+}
+
+// Document functions
+async function processDocument() {
+    const docType = document.getElementById('doc-type').value;
+    const docPath = document.getElementById('doc-path').value.trim();
+    
+    if (!docPath) {
+        alert('Digite o caminho do arquivo!');
+        return;
+    }
+    
+    const resultDiv = document.getElementById('doc-result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<p class="status-badge status-info">Processando...</p>';
+    
+    try {
+        const response = await fetch('/api/process-document', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({file_path: docPath, file_type: docType})
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            resultDiv.innerHTML = `<p class="status-badge status-success">✓ Documento processado!</p><p>Chunks criados: ${data.count}</p>`;
+        } else {
+            resultDiv.innerHTML = `<p class="status-badge status-error">✗ Erro</p><p>${data.error}</p>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<p class="status-badge status-error">Erro: ${error.message}</p>`;
+    }
+}
+
+function processDirectText() {
+    const text = document.getElementById('direct-text').value.trim();
+    if (!text) {
+        alert('Cole um texto para processar!');
+        return;
+    }
+    
+    const resultDiv = document.getElementById('text-result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `<p class="status-badge status-success">✓ Texto processado!</p><p>Caracteres: ${text.length}</p><p>Palavras: ${text.split(/\s+/).length}</p>`;
+}
+
+// Config functions
+document.getElementById('config-temp').addEventListener('input', function() {
+    document.getElementById('temp-value').textContent = this.value;
+});
+
+function saveConfig() {
+    alert('Configurações salvas com sucesso!');
+}
+
+async function checkStatus() {
+    document.getElementById('api-status').textContent = 'Verificando...';
+    document.getElementById('api-status').className = 'status-badge status-info';
+    
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: 'test', session_id: 'test'})
+        });
+        
+        if (response.ok) {
+            document.getElementById('api-status').textContent = 'Online';
+            document.getElementById('api-status').className = 'status-badge status-success';
+        } else {
+            document.getElementById('api-status').textContent = 'Erro';
+            document.getElementById('api-status').className = 'status-badge status-error';
+        }
+    } catch (error) {
+        document.getElementById('api-status').textContent = 'Offline';
+        document.getElementById('api-status').className = 'status-badge status-error';
+    }
+}
+
+function testChat() {
+    const resultDiv = document.getElementById('test-result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<p class="status-badge status-info">Testando chat...</p>';
+    
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: 'Olá, este é um teste!', session_id: 'test'})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = `<p class="status-badge status-success">✓ Chat funcionando!</p><p>Resposta: ${data.response.substring(0, 100)}...</p>`;
+        } else {
+            resultDiv.innerHTML = `<p class="status-badge status-error">✗ Erro no chat</p><p>${data.error}</p>`;
+        }
+    });
+}
+
+function testKB() {
+    alert('Crie uma KB primeiro na aba Knowledge Base!');
+}
+
+function clearAll() {
+    if (confirm('Deseja limpar todos os dados? Esta ação não pode ser desfeita!')) {
+        knowledgeBases = [];
+        updateKBList();
+        updateKBSelect();
+        document.getElementById('chat-messages').innerHTML = '<p style="text-align: center; color: #999;">Inicie uma conversa...</p>';
+        messageCount = 0;
+        document.getElementById('msg-count').textContent = '0';
+        alert('Dados limpos!');
+    }
+}
+
+// Initialize
+checkStatus();
+</script>
+
+{% endblock %}

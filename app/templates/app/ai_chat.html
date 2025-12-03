@@ -1,0 +1,94 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+        <h3>💬 Chat com IA</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Converse com inteligência artificial powered by LangChain</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="chat-messages" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background-color: #f9f9f9; border-radius: 8px;">
+                <p style="text-align: center; color: #999;">Inicie uma conversa...</p>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="message-input" class="form-control" placeholder="Digite sua mensagem..." style="border-radius: 5px 0 0 5px;">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" id="send-btn" style="background: #00bcd4; border-color: #00bcd4; border-radius: 0 5px 5px 0;">Enviar</button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    
+    function addMessage(role, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = role === 'user' ? 'text-right' : 'text-left';
+        messageDiv.style.marginBottom = '10px';
+        
+        const messageBubble = document.createElement('div');
+        messageBubble.style.display = 'inline-block';
+        messageBubble.style.padding = '10px 15px';
+        messageBubble.style.borderRadius = '15px';
+        messageBubble.style.maxWidth = '70%';
+        messageBubble.style.backgroundColor = role === 'user' ? '#00bcd4' : '#e9ecef';
+        messageBubble.style.color = role === 'user' ? 'white' : 'black';
+        messageBubble.textContent = content;
+        
+        messageDiv.appendChild(messageBubble);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        addMessage('user', message);
+        messageInput.value = '';
+        sendBtn.disabled = true;
+        
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: 'default'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                addMessage('assistant', data.response);
+            } else {
+                addMessage('assistant', 'Error: ' + data.error);
+            }
+        } catch (error) {
+            addMessage('assistant', 'Error: ' + error.message);
+        } finally {
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+    }
+    
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+{% endblock %}

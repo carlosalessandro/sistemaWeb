@@ -1,0 +1,332 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<style>
+    .doc-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .upload-area {
+        border: 2px dashed #00bcd4;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        background: #f0f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        background: #e0f7fa;
+        border-color: #0097a7;
+    }
+    
+    .upload-area.dragover {
+        background: #b2ebf2;
+        border-color: #00acc1;
+    }
+    
+    .doc-item {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .doc-item:hover {
+        box-shadow: 0 2px 8px rgba(0,188,212,0.2);
+        border-color: #00bcd4;
+    }
+    
+    .doc-icon {
+        font-size: 32px;
+        width: 50px;
+        text-align: center;
+    }
+    
+    .doc-info {
+        flex: 1;
+    }
+    
+    .doc-info h4 {
+        margin: 0 0 5px 0;
+        color: #333;
+    }
+    
+    .doc-info p {
+        margin: 0;
+        color: #666;
+        font-size: 13px;
+    }
+    
+    .doc-actions button {
+        margin-left: 5px;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00bcd4 0%, #0097a7 100%);
+        transition: width 0.3s ease;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h3>📄 Gerenciador de Documentos</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Upload, processamento e análise de documentos</p>
+    </div>
+</div>
+
+<!-- Upload Area -->
+<div class="doc-card">
+    <h3 style="color: #00bcd4; margin-bottom: 20px;">📤 Upload de Documentos</h3>
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+        <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
+        <h4>Arraste arquivos aqui ou clique para selecionar</h4>
+        <p style="color: #666;">Suporta: TXT, PDF, DOCX, CSV</p>
+        <input type="file" id="file-input" multiple accept=".txt,.pdf,.docx,.csv" style="display: none;">
+    </div>
+    <div id="upload-progress" style="display: none; margin-top: 20px;">
+        <p>Processando: <span id="upload-filename"></span></p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Process Text -->
+<div class="doc-card">
+    <h3 style="color: #00bcd4; margin-bottom: 20px;">✍️ Processar Texto Direto</h3>
+    <div class="form-group">
+        <label>Cole seu texto aqui:</label>
+        <textarea id="direct-text" class="form-control" rows="8" placeholder="Cole o texto que deseja processar..."></textarea>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Chunk Size:</label>
+                <input type="number" id="chunk-size" class="form-control" value="1000">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Overlap:</label>
+                <input type="number" id="chunk-overlap" class="form-control" value="200">
+            </div>
+        </div>
+    </div>
+    <button class="btn-primary" onclick="processText()">
+        <i class="fas fa-cogs"></i> Processar Texto
+    </button>
+    <div id="text-result" style="margin-top: 20px; display: none;"></div>
+</div>
+
+<!-- Documents List -->
+<div class="doc-card">
+    <h3 style="color: #00bcd4; margin-bottom: 20px;">📚 Documentos Processados</h3>
+    <div id="documents-list">
+        <p style="color: #999; text-align: center;">Nenhum documento processado ainda</p>
+    </div>
+</div>
+
+<script>
+let documents = JSON.parse(localStorage.getItem('documents') || '[]');
+
+function updateDocumentsList() {
+    const listDiv = document.getElementById('documents-list');
+    
+    if (documents.length === 0) {
+        listDiv.innerHTML = '<p style="color: #999; text-align: center;">Nenhum documento processado ainda</p>';
+        return;
+    }
+    
+    let html = '';
+    documents.forEach((doc, index) => {
+        const icon = getFileIcon(doc.type);
+        html += `
+            <div class="doc-item">
+                <div class="doc-icon">${icon}</div>
+                <div class="doc-info">
+                    <h4>${doc.name}</h4>
+                    <p>${doc.type.toUpperCase()} • ${doc.size} • ${doc.chunks} chunks • ${new Date(doc.date).toLocaleString()}</p>
+                </div>
+                <div class="doc-actions">
+                    <button class="btn-primary" onclick="viewDocument(${index})">
+                        <i class="fas fa-eye"></i> Ver
+                    </button>
+                    <button class="btn-primary" style="background: #ff5722;" onclick="deleteDocument(${index})">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    listDiv.innerHTML = html;
+}
+
+function getFileIcon(type) {
+    const icons = {
+        'txt': '📄',
+        'pdf': '📕',
+        'docx': '📘',
+        'csv': '📊',
+        'text': '📝'
+    };
+    return icons[type] || '📄';
+}
+
+// File Upload
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('file-input');
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    handleFiles(files);
+});
+
+fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+});
+
+function handleFiles(files) {
+    Array.from(files).forEach(file => {
+        processFile(file);
+    });
+}
+
+function processFile(file) {
+    const progressDiv = document.getElementById('upload-progress');
+    const filenameSpan = document.getElementById('upload-filename');
+    const progressFill = document.getElementById('progress-fill');
+    
+    progressDiv.style.display = 'block';
+    filenameSpan.textContent = file.name;
+    
+    // Simulate processing
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 10;
+        progressFill.style.width = progress + '%';
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            
+            // Add to documents
+            const ext = file.name.split('.').pop().toLowerCase();
+            const chunks = Math.ceil(file.size / 1000);
+            
+            documents.push({
+                name: file.name,
+                type: ext,
+                size: formatFileSize(file.size),
+                chunks: chunks,
+                date: new Date().toISOString()
+            });
+            
+            localStorage.setItem('documents', JSON.stringify(documents));
+            updateDocumentsList();
+            
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+                progressFill.style.width = '0%';
+                alert('✅ Documento processado com sucesso!');
+            }, 500);
+        }
+    }, 200);
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function processText() {
+    const text = document.getElementById('direct-text').value.trim();
+    const chunkSize = parseInt(document.getElementById('chunk-size').value);
+    const overlap = parseInt(document.getElementById('chunk-overlap').value);
+    
+    if (!text) {
+        alert('⚠️ Cole um texto para processar!');
+        return;
+    }
+    
+    const chunks = Math.ceil(text.length / chunkSize);
+    const words = text.split(/\s+/).length;
+    
+    documents.push({
+        name: 'Texto Direto',
+        type: 'text',
+        size: formatFileSize(text.length),
+        chunks: chunks,
+        date: new Date().toISOString()
+    });
+    
+    localStorage.setItem('documents', JSON.stringify(documents));
+    updateDocumentsList();
+    
+    const resultDiv = document.getElementById('text-result');
+    resultDiv.innerHTML = `
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; border-left: 4px solid #4caf50;">
+            <h4 style="color: #4caf50; margin-top: 0;">✅ Texto Processado!</h4>
+            <p><strong>Caracteres:</strong> ${text.length}</p>
+            <p><strong>Palavras:</strong> ${words}</p>
+            <p><strong>Chunks:</strong> ${chunks}</p>
+            <p><strong>Chunk Size:</strong> ${chunkSize}</p>
+            <p><strong>Overlap:</strong> ${overlap}</p>
+        </div>
+    `;
+    resultDiv.style.display = 'block';
+    
+    document.getElementById('direct-text').value = '';
+}
+
+function viewDocument(index) {
+    const doc = documents[index];
+    alert(`📄 ${doc.name}\n\nTipo: ${doc.type.toUpperCase()}\nTamanho: ${doc.size}\nChunks: ${doc.chunks}\nData: ${new Date(doc.date).toLocaleString()}`);
+}
+
+function deleteDocument(index) {
+    if (confirm('Deseja excluir este documento?')) {
+        documents.splice(index, 1);
+        localStorage.setItem('documents', JSON.stringify(documents));
+        updateDocumentsList();
+    }
+}
+
+// Initialize
+updateDocumentsList();
+</script>
+
+{% endblock %}

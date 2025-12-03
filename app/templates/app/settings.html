@@ -1,0 +1,134 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+        <h3>⚙️ Configurações do Sistema</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Configure o comportamento do sistema</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>🤖 Configurações de IA</h3>
+            </div>
+            <div class="form-group">
+                <label>Modelo LLM:</label>
+                <select id="llm-model" class="form-control">
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Temperatura (0-1): <span id="temp-value">0.7</span></label>
+                <input type="range" id="temperature" class="form-control" min="0" max="1" step="0.1" value="0.7">
+            </div>
+            <div class="form-group">
+                <label>Max Tokens:</label>
+                <input type="number" id="max-tokens" class="form-control" value="2000">
+            </div>
+            <button class="btn-primary" onclick="saveAISettings()">Salvar</button>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>📄 Configurações de Documentos</h3>
+            </div>
+            <div class="form-group">
+                <label>Chunk Size:</label>
+                <input type="number" id="chunk-size" class="form-control" value="1000">
+            </div>
+            <div class="form-group">
+                <label>Chunk Overlap:</label>
+                <input type="number" id="chunk-overlap" class="form-control" value="200">
+            </div>
+            <button class="btn-primary" onclick="saveDocSettings()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>🗑️ Gerenciamento de Dados</h3>
+    </div>
+    <p>Limpe os dados armazenados localmente:</p>
+    <button class="btn-primary" style="background: #ff9800;" onclick="clearChats()">Limpar Chats</button>
+    <button class="btn-primary" style="background: #ff9800;" onclick="clearKBs()">Limpar KBs</button>
+    <button class="btn-primary" style="background: #ff9800;" onclick="clearDocs()">Limpar Documentos</button>
+    <button class="btn-primary" style="background: #ff5722;" onclick="clearAll()">Limpar Tudo</button>
+</div>
+
+<script>
+document.getElementById('temperature').addEventListener('input', function() {
+    document.getElementById('temp-value').textContent = this.value;
+});
+
+function saveAISettings() {
+    const settings = {
+        model: document.getElementById('llm-model').value,
+        temperature: parseFloat(document.getElementById('temperature').value),
+        maxTokens: parseInt(document.getElementById('max-tokens').value)
+    };
+    localStorage.setItem('aiSettings', JSON.stringify(settings));
+    alert('✅ Configurações de IA salvas!');
+}
+
+function saveDocSettings() {
+    const settings = {
+        chunkSize: parseInt(document.getElementById('chunk-size').value),
+        chunkOverlap: parseInt(document.getElementById('chunk-overlap').value)
+    };
+    localStorage.setItem('docSettings', JSON.stringify(settings));
+    alert('✅ Configurações de documentos salvas!');
+}
+
+function clearChats() {
+    if (confirm('Limpar histórico de chats?')) {
+        localStorage.removeItem('totalQueries');
+        alert('✅ Chats limpos!');
+    }
+}
+
+function clearKBs() {
+    if (confirm('Limpar todas as Knowledge Bases?')) {
+        localStorage.removeItem('knowledgeBases');
+        alert('✅ Knowledge Bases limpas!');
+    }
+}
+
+function clearDocs() {
+    if (confirm('Limpar todos os documentos?')) {
+        localStorage.removeItem('documents');
+        alert('✅ Documentos limpos!');
+    }
+}
+
+function clearAll() {
+    if (confirm('⚠️ ATENÇÃO: Isso vai limpar TODOS os dados! Continuar?')) {
+        localStorage.clear();
+        alert('✅ Todos os dados foram limpos!');
+        location.reload();
+    }
+}
+
+// Load saved settings
+const aiSettings = JSON.parse(localStorage.getItem('aiSettings') || '{}');
+if (aiSettings.model) document.getElementById('llm-model').value = aiSettings.model;
+if (aiSettings.temperature) {
+    document.getElementById('temperature').value = aiSettings.temperature;
+    document.getElementById('temp-value').textContent = aiSettings.temperature;
+}
+if (aiSettings.maxTokens) document.getElementById('max-tokens').value = aiSettings.maxTokens;
+
+const docSettings = JSON.parse(localStorage.getItem('docSettings') || '{}');
+if (docSettings.chunkSize) document.getElementById('chunk-size').value = docSettings.chunkSize;
+if (docSettings.chunkOverlap) document.getElementById('chunk-overlap').value = docSettings.chunkOverlap;
+</script>
+
+{% endblock %}

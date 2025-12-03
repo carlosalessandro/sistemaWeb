@@ -1,0 +1,97 @@
+{% extends "app/layout_sidebar.html" %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+        <h3>🎉 Bem-vindo ao Sistema LangChain AI</h3>
+    </div>
+    <p style="font-size: 18px; line-height: 1.6;">
+        Sistema completo de inteligência artificial com arquitetura MVC escalável.
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>💬 Chat com IA</h3>
+            </div>
+            <p>Converse com inteligência artificial usando GPT-3.5 ou GPT-4.</p>
+            <a href="{% url 'ai_chat' %}" class="btn-primary">Acessar Chat</a>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>🎨 Dashboard No-Code</h3>
+            </div>
+            <p>Interface visual completa para gerenciar todas as funcionalidades.</p>
+            <a href="{% url 'nocode_dashboard' %}" class="btn-primary">Abrir Dashboard</a>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>📚 Knowledge Base</h3>
+            </div>
+            <p>Crie bases de conhecimento e faça perguntas sobre seus documentos.</p>
+            <a href="{% url 'nocode_dashboard' %}" class="btn-primary">Criar KB</a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>🚀 Funcionalidades</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 style="color: #00bcd4;">✅ Implementado</h4>
+                    <ul style="line-height: 2;">
+                        <li>Chat interativo com IA</li>
+                        <li>Knowledge Base (RAG)</li>
+                        <li>Processamento de documentos</li>
+                        <li>Dashboard visual no-code</li>
+                        <li>APIs REST completas</li>
+                        <li>Menu lateral responsivo</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4 style="color: #00bcd4;">🎯 Tecnologias</h4>
+                    <ul style="line-height: 2;">
+                        <li>Django 3.2+</li>
+                        <li>LangChain 1.1.0</li>
+                        <li>OpenAI GPT-3.5/GPT-4</li>
+                        <li>FAISS Vector Store</li>
+                        <li>Bootstrap + Custom CSS</li>
+                        <li>JavaScript ES6+</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>📖 Documentação</h3>
+            </div>
+            <p>Acesse a documentação completa para começar:</p>
+            <ul style="line-height: 2;">
+                <li><strong>README_LANGCHAIN.md</strong> - Documentação técnica completa</li>
+                <li><strong>GUIA_RAPIDO.md</strong> - Início rápido</li>
+                <li><strong>DASHBOARD_NOCODE.md</strong> - Guia do dashboard</li>
+                <li><strong>COMO_USAR_DASHBOARD.md</strong> - Tutorial passo a passo</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
